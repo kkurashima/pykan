@@ -151,21 +151,25 @@ class KANLayer(nn.Module):
         >>> y.shape, preacts.shape, postacts.shape, postspline.shape
         '''
         batch = x.shape[0]
+        seq_len = x.shape[1]
         # preacts = x[:,None,:].clone().expand(batch, self.out_dim, self.in_dim)
-        preacts = None
+        preacts = x[:,:,None,:].clone().expand(batch, seq_len, self.out_dim, self.in_dim)
+        # preacts = None
 
         base = self.base_fun(x) # (batch, seq, in_dim)
         y = coef2curve(x_eval=x, grid=self.grid, coef=self.coef, k=self.k) # (batch, seq_length, in, out)
 
         # postspline = y.clone().permute(0,2,1)
-        postspline = None
+        postspline = y.clone().permute(0,1,3,2)
+        # postspline = None
 
         # self.scale_base, self.mask, shape (in, out)
         y = self.scale_base[None,None,:,:] * base[:,:,:,None] + self.scale_sp[None,None,:,:] * y
         y = self.mask[None,None,:,:] * y
 
         # postacts = y.clone().permute(0,2,1)
-        postacts = None
+        postacts = y.clone().permute(0,1,3,2)
+        # postacts = None
 
         y = torch.sum(y, dim=2)
         return y, preacts, postacts, postspline
@@ -365,3 +369,9 @@ class KANLayer(nn.Module):
             swap_(self.scale_base.data, i1, i2, mode=mode)
             swap_(self.scale_sp.data, i1, i2, mode=mode)
             swap_(self.mask.data, i1, i2, mode=mode)
+
+from kan.KANLayer import *
+model = KANLayer(in_dim=3, out_dim=5)
+x = torch.normal(0,1,size=(10,100,3))
+y, preacts, postacts, postspline = model(x)
+print(y.shape, preacts.shape, postacts.shape, postspline.shape)
