@@ -776,8 +776,8 @@ class MultKAN(nn.Module):
         >>> print(model(x, singularity_avoiding=True))
         >>> print(model(x, singularity_avoiding=True, y_th=1.))
         '''
-        x = x[:,self.input_id.long()]
-        assert x.shape[1] == self.width_in[0]
+        x = x[:,:,self.input_id.long()]
+        assert x.shape[2] == self.width_in[0]
         
         # cache data
         self.cache_data = x
