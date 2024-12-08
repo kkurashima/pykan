@@ -177,7 +177,7 @@ class KANLayer(nn.Module):
         Args:
         -----
             x : 2D torch.float
-                inputs, shape (number of samples, input dimension)
+                inputs, shape (number of samples, input dimension) aka (batch, width of this layer)
 
         Returns:
         --------
@@ -194,7 +194,7 @@ class KANLayer(nn.Module):
 
         batch = x.shape[0]
         #x = torch.einsum('ij,k->ikj', x, torch.ones(self.out_dim, ).to(self.device)).reshape(batch, self.size).permute(1, 0)
-        x_pos = torch.sort(x, dim=0)[0]
+        x_pos = torch.sort(x, dim=0)[0] # x, sorted by values of the input
         y_eval = coef2curve(x_pos, self.grid, self.coef, self.k)
         num_interval = self.grid.shape[1] - 1 - 2*self.k
 
